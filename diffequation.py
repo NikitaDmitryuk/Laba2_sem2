@@ -81,17 +81,17 @@ class DiffEquation:
                     self.u[k][N] = conditions[1](N * dx, k * dt)
             elif conditions[0] == 'u(x, 0)':
                 self.u[0] = [conditions[1](j * dx, 0) for j in range(N + 1)]
-            elif conditions[0].replace(' ', '') == 'b0,c0':
-                b0, c0 = conditions[1]
-            elif conditions[0].replace(' ', '') == 'bk,ck':
-                bk, ck = conditions[1]
+            elif conditions[0].replace(' ', '') == 'a0':
+                a0 = conditions[1]
+            elif conditions[0].replace(' ', '') == 'an':
+                an = conditions[1]
 
         if self.type_of_method == 'explicit method':
             self.explicit_method(a, source_function)
         elif self.type_of_method == 'implicit method':
             self.implicit_method(a, source_function)
         elif self.type_of_method == 'diffusion equation':
-            self.diffusion_equation(D, betta, b0, c0, bk, ck)
+            self.diffusion_equation(D, betta, a0, an)
 
         return self.u
 
@@ -117,13 +117,16 @@ class DiffEquation:
             F = [self.u[k][j] / gamma + a * a * dx * dx * source_function(j * dx, (k + 1) * dt) for j in range(N + 1)]
             self.u[k + 1] = sweep_method(1, 1, 2 + 1 / gamma, F, self.u[0][0], self.u[0][N], N)
 
-    def diffusion_equation(self, D, betta, b0, c0, bk, ck):
+    def diffusion_equation(self, D, betta, a0, an):
         dx = self.dx
         dt = self.dt
         N = self.N
         K = self.K
 
-        gamma = dt / dx / dx
+        sigma = 0.5
+
+        gamma = sigma * dt / dx / dx
+
         a = lambda j, k: 2 * D((j - 1)*dx, dt * k) * D(j*dx, dt * k) / (D((j - 1)*dx, dt * k) + D(j*dx, dt * k))
 
         A = [0.0]*(N + 1)
@@ -132,18 +135,24 @@ class DiffEquation:
         F = [0.0]*(N + 1)
 
         for k in range(K):
-            B[0] = dx * betta / 2 - 1 / dx - dx / 2 / dt - b0((k + 1)*dt)
-            C[0] = 1 / dx
-            F[0] = c0((k + 1)*dt) - dx * self.u[k][0] / 2 / dt
 
-            A[N] = - 1 / dx
-            B[N] = 1 / dx + dx / 2 / dt - dx * betta / 2 - bk((k + 1)*dt)
-            F[N] = ck((k + 1)*dt) + dx * self.u[k][N] / 2 / dt
+            B[0] = dx * sigma / 2 - dx / 2 / dt - sigma * a0(k*dt) - sigma / dx
+            C[0] = sigma / dx
+            F[0] = ((1 - sigma) / dx + (1 - sigma) * a0(k*dt) - dx / 2 / dt - dx * betta / 2 + sigma * dx / 2) * self.u[k][0] +\
+                   ((sigma - 1) / dx) * self.u[k][1]
+
+            A[N] = dx * sigma / 2 - dx / 2 / dt - sigma * a0(k*dt) - sigma / dx
+            B[N] = sigma / dx
+            F[N] = ((1 - sigma) / dx + (1 - sigma) * a0(k*dt) - dx / 2 / dt - dx * betta / 2 + sigma * dx / 2) * self.u[k][N-1] +\
+                   ((sigma - 1) / dx) * self.u[k][N]
 
             for j in range(1, N):
-                A[j] = gamma * a(j - 1, k)
-                B[j] = 1 + gamma * (a(j + 1, k) + a(j - 1, k)) - dt * betta
+
+                A[j] = -gamma * a(j, k)
+                B[j] = 1 + gamma * (a(j + 1, k) + a(j, k)) - dt * betta / 2
                 C[j] = - gamma * a(j + 1, k)
-                F[j] = self.u[k][j]
+                F[j] = self.u[k][j-1] * a(j, k) * (gamma / sigma - gamma) +\
+                       self.u[k][j] * (1 + betta * dt / 2 - (gamma / sigma - gamma) * (a(j + 1, k) + a(j, k))) +\
+                       self.u[k][j+1] * a(j+1, k) * (gamma / sigma - gamma)
 
             self.u[k+1] = tdma(A=A, B=B, C=C, F=F)
