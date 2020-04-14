@@ -124,11 +124,11 @@ class DiffEquation:
         K = self.K
 
         gamma = dt / dx / dx
-        a = lambda j, m, n: D(j*dx + m * dx / 2, dt * (n + 1))  # m = +1, -1;
+        a = lambda j, k: 2 * D((j - 1)*dx, dt * k) * D(j*dx, dt * k) / (D((j - 1)*dx, dt * k) + D(j*dx, dt * k))
 
         A = [0.0]*(N + 1)
         B = [0.0]*(N + 1)
-        C = [0.0]*N
+        C = [0.0]*(N + 1)
         F = [0.0]*(N + 1)
 
         for k in range(K):
@@ -141,9 +141,9 @@ class DiffEquation:
             F[N] = ck((k + 1)*dt) + dx * self.u[k][N] / 2 / dt
 
             for j in range(1, N):
-                A[j] = gamma * a(j, -1, k)
-                C[j] = 1 + gamma * (a(j, 1, k) + a(j, -1, k)) - dt * betta
-                B[j] = - gamma * a(j, 1, k)
+                A[j] = gamma * a(j - 1, k)
+                B[j] = 1 + gamma * (a(j + 1, k) + a(j - 1, k)) - dt * betta
+                C[j] = - gamma * a(j + 1, k)
                 F[j] = self.u[k][j]
 
             self.u[k+1] = tdma(A=A, B=B, C=C, F=F)

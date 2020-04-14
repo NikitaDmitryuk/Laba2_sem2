@@ -35,19 +35,19 @@ def plot_tmp(u, title):
 # t0 = 0
 # t1 = 10
 
-dx = 0.001
-dt = 3
+dx = 0.1
+dt = 0.01
 
 x0 = 0
-x1 = 9
+x1 = 1
 
 t0 = 0
-t1 = 9
+t1 = 2
 
 D0 = 0.01
 D = lambda x, t: D0 * (1 + x / x1)
 k = lambda t: 0.1
-betta = 0
+betta = 0  # - 10 ** (-6)
 
 
 def main():
@@ -81,7 +81,7 @@ def main():
                              t0=t0, t1=t1,
                              dx=dx, dt=dt,
                              betta=betta,
-                             D=lambda x, t: 1,
+                             D=lambda x, t: 0.00001,
                              border_conditions=[('u(x, 0)', lambda x, t: 1),
                                                 ('b0, c0', (lambda t: 0, lambda t: 0)),
                                                 ('bk, ck', (lambda t: 0, lambda t: 0))]  # ('bk, ck', (lambda t: - k(t) / D(x1, t), lambda t: 0))
