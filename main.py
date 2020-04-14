@@ -35,19 +35,19 @@ def plot_tmp(u, title):
 # t0 = 0
 # t1 = 10
 
-dx = 0.001
-dt = 3
+dx = 0.01
+dt = 100
 
 x0 = 0
-x1 = 9
+x1 = 100
 
 t0 = 0
-t1 = 9
+t1 = 6000
 
 D0 = 0.01
 D = lambda x, t: D0 * (1 + x / x1)
 k = lambda t: 0.1
-betta = 0
+betta = -1e-6
 
 
 def main():
@@ -83,8 +83,8 @@ def main():
                              betta=betta,
                              D=lambda x, t: 1,
                              border_conditions=[('u(x, 0)', lambda x, t: 1),
-                                                ('b0, c0', (lambda t: 0, lambda t: 0)),
-                                                ('bk, ck', (lambda t: 0, lambda t: 0))]  # ('bk, ck', (lambda t: - k(t) / D(x1, t), lambda t: 0))
+                                                ('a0', lambda t: 0),
+                                                ('an', lambda t: -k(t) / D(x1, t))]
                              )
     plot_tmp(u, 'Решение уравнения диффузии')
 
