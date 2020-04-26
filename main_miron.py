@@ -28,7 +28,7 @@ def plot_tmp(u, title):
 
 
 dx = 0.1
-dt = 0.005
+dt = 0.006
 
 x0 = 0
 x1 = np.pi / 2
@@ -49,14 +49,14 @@ def main():
                              source_function=lambda x, t: np.exp(t) * np.cos(x))
     plot_tmp(u, 'Решение с помощью явной схемы')
 
-    diff_equation = DiffEquationMiron(type_of_method='implicit method')  # 'explicit method', 'implicit method'
-    u = diff_equation.dsolve(x0=x0, x1=x1,
-                             t0=t0, t1=t1,
-                             dx=dx, dt=dt,
-                             border_conditions=[('u(x, 0)', lambda x, t: 2*x),
-                                                ('u(l, t)', lambda x, t: np.pi)],
-                             source_function=lambda x, t: np.exp(t)*np.cos(x))
-    plot_tmp(u, 'Решение с помощью неявной схемы')
+    # diff_equation = DiffEquationMiron(type_of_method='implicit method')  # 'explicit method', 'implicit method'
+    # u = diff_equation.dsolve(x0=x0, x1=x1,
+    #                          t0=t0, t1=t1,
+    #                          dx=dx, dt=dt,
+    #                          border_conditions=[('u(x, 0)', lambda x, t: 2*x),
+    #                                             ('u(l, t)', lambda x, t: np.pi)],
+    #                          source_function=lambda x, t: np.exp(t)*np.cos(x))
+    # plot_tmp(u, 'Решение с помощью неявной схемы')
 
     plt.show()
 
